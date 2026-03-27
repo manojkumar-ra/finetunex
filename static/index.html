@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FineTuneX</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #06b6d4;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 35px;
+        }
+
+        .tab {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #222;
+            background: transparent;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #06b6d4;
+            color: #000;
+            border-color: #06b6d4;
+        }
+
+        .tab:hover:not(.active) { border-color: #333; color: #aaa; }
+
+        /* steps indicator */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #444;
+        }
+
+        .step.active { color: #06b6d4; }
+        .step.done { color: #22c55e; }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 600;
+            border: 1px solid #333;
+        }
+
+        .step.active .step-num { background: #06b6d4; color: #000; border-color: #06b6d4; }
+        .step.done .step-num { background: #22c55e; color: #000; border-color: #22c55e; }
+
+        /* upload */
+        .upload-zone {
+            border: 2px dashed #222;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.03);
+        }
+
+        .upload-zone .icon { font-size: 3rem; margin-bottom: 15px; }
+        .upload-zone h3 { color: #ccc; font-weight: 500; margin-bottom: 6px; }
+        .upload-zone span { color: #555; font-size: 0.85rem; }
+        .upload-zone input { display: none; }
+
+        .card {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+
+        /* stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #06b6d4;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        /* preview table */
+        .preview-wrap { overflow-x: auto; }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .preview-table th {
+            text-align: left;
+            padding: 8px 10px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .preview-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #111;
+            font-size: 0.8rem;
+            color: #999;
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* config form */
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .config-item label {
+            display: block;
+            font-size: 0.82rem;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .config-item select, .config-item input {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .config-item select:focus, .config-item input:focus {
+            outline: none;
+            border-color: #06b6d4;
+        }
+
+        /* buttons */
+        .btn {
+            padding: 12px 32px;
+            background: #06b6d4;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover { background: #0891b2; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #222;
+            color: #888;
+        }
+        .btn-outline:hover { border-color: #333; color: #ccc; }
+
+        /* training progress */
+        .training-section { display: none; }
+
+        .progress-bar-wrap {
+            background: #1a1a1a;
+            border-radius: 10px;
+            height: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #06b6d4;
+            border-radius: 10px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .training-status {
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        /* results */
+        .results-section { display: none; }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .chart-card {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .chart-card canvas { max-height: 280px; }
+
+        .explanation-text {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: #bbb;
+        }
+
+        /* chat */
+        .chat-section { display: none; }
+
+        .chat-box {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            height: 350px;
+            overflow-y: auto;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .chat-msg {
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .chat-label.user { color: #06b6d4; }
+        .chat-label.base { color: #888; }
+        .chat-label.finetuned { color: #22c55e; }
+
+        .chat-text {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #ccc;
+            padding: 10px 14px;
+            background: #111;
+            border-radius: 10px;
+        }
+
+        .chat-input-wrap {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .chat-input:focus { outline: none; border-color: #06b6d4; }
+
+        .compare-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid #222;
+            background: transparent;
+            color: #666;
+        }
+
+        .toggle-btn.active { background: #06b6d4; color: #000; border-color: #06b6d4; }
+
+        /* history */
+        .history-section { display: none; }
+
+        .history-card {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-left { display: flex; flex-direction: column; gap: 4px; }
+
+        .history-name { font-weight: 600; font-size: 0.95rem; }
+
+        .history-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: #555;
+        }
+
+        .history-right { text-align: right; }
+
+        .history-loss {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #06b6d4;
+            font-weight: 600;
+        }
+
+        .history-date {
+            font-size: 0.75rem;
+            color: #444;
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #444;
+        }
+
+        .loading { display: none; text-align: center; padding: 20px; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #1a1a1a;
+            border-top-color: #06b6d4;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FineTuneX</h1>
+            <p>fine-tune language models with LoRA — right from your browser</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('train')">train</div>
+            <div class="tab" onclick="switchTab('chat')">chat</div>
+            <div class="tab" onclick="switchTab('history')">history</div>
+        </div>
+
+        <!-- train tab -->
+        <div id="train-tab">
+            <div class="steps">
+                <div class="step active" id="step1"><span class="step-num">1</span> upload</div>
+                <div class="step" id="step2"><span class="step-num">2</span> configure</div>
+                <div class="step" id="step3"><span class="step-num">3</span> train</div>
+                <div class="step" id="step4"><span class="step-num">4</span> results</div>
+            </div>
+
+            <!-- upload -->
+            <div id="uploadSection">
+                <div class="upload-zone" id="uploadZone">
+                    <div class="icon">&#128218;</div>
+                    <h3>Drop your training data here or click to upload</h3>
+                    <span>csv or json with prompt/completion pairs</span>
+                    <input type="file" id="fileInput" accept=".csv,.json">
+                </div>
+            </div>
+
+            <!-- configure -->
+            <div id="configSection" style="display:none;">
+                <div class="card">
+                    <div class="section-title">dataset preview</div>
+                    <div class="stats-grid" id="datasetStats"></div>
+                    <div class="preview-wrap" id="dataPreview"></div>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">training configuration</div>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label>prompt column</label>
+                            <select id="promptCol"></select>
+                        </div>
+                        <div class="config-item">
+                            <label>completion column</label>
+                            <select id="completionCol"></select>
+                        </div>
+                        <div class="config-item">
+                            <label>epochs</label>
+                            <input type="number" id="epochs" value="3" min="1" max="20">
+                        </div>
+                        <div class="config-item">
+                            <label>LoRA rank</label>
+                            <select id="loraRank">
+                                <option value="4">4 (lighter)</option>
+                                <option value="8" selected>8 (balanced)</option>
+                                <option value="16">16 (heavier)</option>
+                            </select>
+                        </div>
+                        <div class="config-item">
+                            <label>learning rate</label>
+                            <input type="text" id="learningRate" value="0.0003">
+                        </div>
+                        <div class="config-item">
+                            <label>batch size</label>
+                            <select id="batchSize">
+                                <option value="2">2</option>
+                                <option value="4" selected>4</option>
+                                <option value="8">8</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" id="trainBtn" onclick="startTraining()">Start Fine-Tuning</button>
+                </div>
+            </div>
+
+            <!-- training progress -->
+            <div class="training-section" id="trainingSection">
+                <div class="card">
+                    <div class="section-title">training in progress</div>
+                    <div class="spinner" style="margin: 20px auto;"></div>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="training-status" id="trainingStatus">preparing model...</div>
+                </div>
+            </div>
+
+            <!-- results -->
+            <div class="results-section" id="resultsSection">
+                <div class="result-stats" id="resultStats"></div>
+
+                <div class="chart-card">
+                    <div class="section-title">training loss curve</div>
+                    <canvas id="lossChart"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">ai analysis</div>
+                    <div class="explanation-text" id="explanationText"></div>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <button class="btn" onclick="switchTab('chat')" style="flex:1;">Test Your Model</button>
+                    <button class="btn btn-outline" onclick="resetAll()" style="flex:1;">Train Again</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- chat tab -->
+        <div class="chat-section" id="chat-tab">
+            <div class="card">
+                <div class="section-title">test your fine-tuned model</div>
+                <div class="compare-toggle">
+                    <div class="toggle-btn active" id="toggleFinetuned" onclick="setMode('finetuned')">fine-tuned</div>
+                    <div class="toggle-btn" id="toggleBase" onclick="setMode('base')">base model</div>
+                    <div class="toggle-btn" id="toggleCompare" onclick="setMode('compare')">compare both</div>
+                </div>
+                <div class="chat-box" id="chatBox"></div>
+                <div class="chat-input-wrap">
+                    <input class="chat-input" id="chatInput" placeholder="type a prompt..." onkeydown="if(event.key==='Enter')sendChat()">
+                    <button class="btn" onclick="sendChat()" style="width:auto; padding:12px 24px;">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- history tab -->
+        <div class="history-section" id="history-tab">
+            <div id="historyList">
+                <div class="empty-state">no training runs yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let datasetInfo = null;
+        let chatMode = 'finetuned';
+        let lossChartInstance = null;
+
+        // upload handlers
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', () => { if (fileInput.files.length > 0) uploadFile(fileInput.files[0]); });
+
+        async function uploadFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['csv', 'json'].includes(ext)) { alert('upload csv or json'); return; }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            uploadZone.innerHTML = '<div class="icon">&#9203;</div><h3>uploading...</h3>';
+
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.error) { alert(data.error); location.reload(); return; }
+                datasetInfo = data;
+                showConfig(data);
+            } catch (err) {
+                alert('upload failed: ' + err.message);
+                location.reload();
+            }
+        }
+
+        function showConfig(data) {
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('configSection').style.display = 'block';
+            setStep(2);
+
+            document.getElementById('datasetStats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${data.total_examples}</div>
+                    <div class="stat-label">training examples</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.columns.length}</div>
+                    <div class="stat-label">columns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">GPT-2</div>
+                    <div class="stat-label">base model</div>
+                </div>
+            `;
+
+            // preview
+            if (data.preview.length > 0) {
+                const cols = Object.keys(data.preview[0]);
+                let html = '<table class="preview-table"><thead><tr>';
+                cols.forEach(c => html += `<th>${c}</th>`);
+                html += '</tr></thead><tbody>';
+                data.preview.slice(0, 5).forEach(row => {
+                    html += '<tr>';
+                    cols.forEach(c => html += `<td>${row[c]}</td>`);
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                document.getElementById('dataPreview').innerHTML = html;
+            }
+
+            // populate column selectors
+            const promptSel = document.getElementById('promptCol');
+            const compSel = document.getElementById('completionCol');
+            promptSel.innerHTML = '';
+            compSel.innerHTML = '';
+            data.columns.forEach((col, i) => {
+                promptSel.innerHTML += `<option value="${col}" ${i === 0 ? 'selected' : ''}>${col}</option>`;
+                compSel.innerHTML += `<option value="${col}" ${i === 1 ? 'selected' : ''}>${col}</option>`;
+            });
+        }
+
+        async function startTraining() {
+            const btn = document.getElementById('trainBtn');
+            btn.disabled = true;
+            btn.textContent = 'Starting...';
+
+            document.getElementById('configSection').style.display = 'none';
+            document.getElementById('trainingSection').style.display = 'block';
+            setStep(3);
+
+            const body = {
+                prompt_col: document.getElementById('promptCol').value,
+                completion_col: document.getElementById('completionCol').value,
+                epochs: parseInt(document.getElementById('epochs').value),
+                lora_rank: parseInt(document.getElementById('loraRank').value),
+                learning_rate: parseFloat(document.getElementById('learningRate').value),
+                batch_size: parseInt(document.getElementById('batchSize').value)
+            };
+
+            try {
+                const res = await fetch('/train', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    location.reload();
+                    return;
+                }
+
+                showResults(data);
+            } catch (err) {
+                alert('training failed: ' + err.message);
+                location.reload();
+            }
+        }
+
+        function showResults(data) {
+            document.getElementById('trainingSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            setStep(4);
+
+            const s = data.summary;
+
+            document.getElementById('resultStats').innerHTML = `
+                <div class="card" style="text-align:center; margin-bottom:0;">
+                    <div class="stat-value">${s.final_loss}</div>
+                    <div class="stat-label">final loss</div>
+                </div>
+                <div class="card" style="text-align:center; margin-bottom:0;">
+                    <div class="stat-value">${s.trainable_percent}%</div>
+                    <div class="stat-label">params trained</div>
+                </div>
+                <div class="card" style="text-align:center; margin-bottom:0;">
+                    <div class="stat-value">${s.training_time}s</div>
+                    <div class="stat-label">training time</div>
+                </div>
+                <div class="card" style="text-align:center; margin-bottom:0;">
+                    <div class="stat-value">${s.epochs}</div>
+                    <div class="stat-label">epochs</div>
+                </div>
+            `;
+
+            // loss chart
+            renderLossChart(data.losses);
+
+            // explanation
+            document.getElementById('explanationText').textContent = data.explanation || 'no explanation available';
+        }
+
+        function renderLossChart(losses) {
+            if (lossChartInstance) lossChartInstance.destroy();
+
+            const ctx = document.getElementById('lossChart').getContext('2d');
+            lossChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: losses.map((_, i) => `Epoch ${i + 1}`),
+                    datasets: [{
+                        label: 'Training Loss',
+                        data: losses,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#06b6d4'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: '#888' } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#1a1a1a' }, ticks: { color: '#555' } },
+                        y: {
+                            grid: { color: '#1a1a1a' },
+                            ticks: { color: '#555' },
+                            title: { display: true, text: 'Loss', color: '#555' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // chat
+        function setMode(mode) {
+            chatMode = mode;
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('toggle' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const prompt = input.value.trim();
+            if (!prompt) return;
+            input.value = '';
+
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `
+                <div class="chat-msg">
+                    <span class="chat-label user">you</span>
+                    <div class="chat-text">${prompt}</div>
+                </div>
+            `;
+
+            if (chatMode === 'compare') {
+                // send to both models
+                chatBox.innerHTML += `<div class="chat-msg"><span class="chat-label base">base model</span><div class="chat-text" id="baseResp">generating...</div></div>`;
+                chatBox.innerHTML += `<div class="chat-msg"><span class="chat-label finetuned">fine-tuned</span><div class="chat-text" id="ftResp">generating...</div></div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                const [baseRes, ftRes] = await Promise.all([
+                    fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, use_finetuned: false }) }).then(r => r.json()),
+                    fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, use_finetuned: true }) }).then(r => r.json())
+                ]);
+
+                document.getElementById('baseResp').textContent = baseRes.response || baseRes.error;
+                document.getElementById('ftResp').textContent = ftRes.response || ftRes.error;
+            } else {
+                const useFt = chatMode === 'finetuned';
+                const label = useFt ? 'fine-tuned' : 'base model';
+                const labelClass = useFt ? 'finetuned' : 'base';
+
+                chatBox.innerHTML += `<div class="chat-msg"><span class="chat-label ${labelClass}">${label}</span><div class="chat-text" id="lastResp">generating...</div></div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, use_finetuned: useFt })
+                });
+                const data = await res.json();
+                document.getElementById('lastResp').textContent = data.response || data.error;
+                document.getElementById('lastResp').removeAttribute('id');
+            }
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function setStep(n) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById('step' + i);
+                el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+            }
+        }
+
+        function resetAll() { location.reload(); }
+
+        // tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            ['train', 'chat', 'history'].forEach(t => {
+                document.getElementById(t + '-tab').style.display = t === tab ? 'block' : 'none';
+            });
+            if (tab === 'history') loadHistory();
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/history');
+                const data = await res.json();
+                const container = document.getElementById('historyList');
+
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="empty-state">no training runs yet</div>';
+                    return;
+                }
+
+                container.innerHTML = data.map(item => `
+                    <div class="history-card">
+                        <div class="history-left">
+                            <span class="history-name">${item.filename}</span>
+                            <span class="history-meta">${item.base_model} · ${item.total_examples} examples · ${item.epochs} epochs · LoRA r=${item.lora_rank}</span>
+                        </div>
+                        <div class="history-right">
+                            <div class="history-loss">loss: ${item.final_loss}</div>
+                            <div class="history-date">${item.created_at}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('failed to load history:', err);
+            }
+        }
+    </script>
+</body>
+</html>

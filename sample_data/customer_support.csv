@@ -1,0 +1,31 @@
+prompt,completion
+How do I reset my password?,Go to Settings > Account > Reset Password. Click the reset link and check your email for the verification code.
+What are your business hours?,We are open Monday to Friday from 9 AM to 6 PM EST. Weekend support is available via email only.
+How can I cancel my subscription?,You can cancel anytime from Settings > Billing > Cancel Plan. Your access continues until the end of the billing cycle.
+Do you offer refunds?,Yes we offer full refunds within 14 days of purchase. Contact support with your order ID and we will process it within 2-3 business days.
+How do I update my payment method?,Go to Settings > Billing > Payment Methods. You can add a new card or update your existing one there.
+What payment methods do you accept?,We accept Visa Mastercard American Express and PayPal. We also support bank transfers for annual plans.
+How do I contact support?,You can reach us via live chat on our website email at support@company.com or call us at 1-800-123-4567.
+Is there a free trial?,Yes we offer a 14-day free trial with full access to all features. No credit card required to start.
+How do I upgrade my plan?,Go to Settings > Billing > Change Plan. Select your new plan and confirm. The upgrade takes effect immediately.
+Can I export my data?,Yes go to Settings > Data > Export. You can download all your data as CSV or JSON files.
+How do I add team members?,Go to Settings > Team > Invite Members. Enter their email addresses and select their role permissions.
+What is your uptime guarantee?,We guarantee 99.9% uptime. Check our status page at status.company.com for real-time service health.
+How do I enable two-factor authentication?,Go to Settings > Security > 2FA. You can use an authenticator app or SMS verification.
+Can I change my username?,Yes go to Settings > Profile > Edit. You can change your username once every 30 days.
+How do I delete my account?,Go to Settings > Account > Delete Account. Note that this action is permanent and all data will be removed after 30 days.
+What browsers do you support?,We support the latest versions of Chrome Firefox Safari and Edge. For the best experience we recommend Chrome.
+How do I report a bug?,Click the Help icon in the bottom right corner and select Report a Bug. Include screenshots if possible.
+Do you have a mobile app?,Yes our app is available on both iOS and Android. Search for our name in the App Store or Google Play.
+How do I change my email address?,Go to Settings > Profile > Email. Enter your new email and verify it through the confirmation link.
+What is your data retention policy?,We retain your data for 90 days after account deletion. You can request immediate deletion by contacting support.
+How do I set up notifications?,Go to Settings > Notifications. You can customize email push and in-app notification preferences.
+Can I use the API?,Yes we have a REST API available on all paid plans. Check our developer docs at docs.company.com/api for details.
+How do I share a project?,Click the Share button on any project page. You can share via link email or invite specific team members.
+What file formats do you support?,We support PDF DOCX XLSX PNG JPG and CSV files. Maximum file size is 25MB per upload.
+How do I change the language?,Go to Settings > Preferences > Language. We currently support English Spanish French German and Japanese.
+Is my data encrypted?,Yes all data is encrypted at rest using AES-256 and in transit using TLS 1.3.
+How do I merge duplicate contacts?,Go to Contacts > Tools > Find Duplicates. Review the suggestions and click Merge for each pair.
+Can I schedule reports?,Yes go to Reports > Schedule. You can set up daily weekly or monthly automated reports sent to your email.
+How do I integrate with Slack?,Go to Settings > Integrations > Slack. Click Connect and authorize our app in your Slack workspace.
+What happens when my trial ends?,Your account switches to the free plan with limited features. Your data is preserved and you can upgrade anytime.
