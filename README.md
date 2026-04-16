@@ -1,8 +1,19 @@
+---
+title: FineTuneX
+emoji: 🧠
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
 ![HuggingFace](https://img.shields.io/badge/HuggingFace-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![LoRA](https://img.shields.io/badge/LoRA-PEFT-FF6F00?style=for-the-badge)
 
 # FineTuneX
@@ -17,7 +28,7 @@ LLM fine-tuning platform that lets you upload custom training data, fine-tune GP
 - Live training loss curve visualization
 - AI-powered explanation of training results
 - Chat interface to test fine-tuned model vs base model side by side
-- Training history saved to MySQL
+- Training history saved to SQLite
 
 ## Tech Stack
 
@@ -26,7 +37,7 @@ LLM fine-tuning platform that lets you upload custom training data, fine-tune GP
 - **Training**: PyTorch, HuggingFace Transformers
 - **Backend**: FastAPI
 - **AI Explanation**: Groq API (Llama 3.3 70B)
-- **Database**: MySQL
+- **Database**: SQLite
 - **Frontend**: HTML, CSS, JavaScript, Chart.js
 
 ## Project Structure
@@ -36,20 +47,15 @@ finetunex/
 ├── main.py                 # FastAPI server, API endpoints
 ├── trainer.py              # LoRA training loop, model loading, chat
 ├── explainer.py            # Groq AI explanation of training results
-├── database.py             # MySQL connection and training history
+├── database.py             # SQLite connection and training history
 ├── requirements.txt
-├── .env.example
-├── .gitignore
+├── Dockerfile
 ├── static/
 │   └── index.html          # Frontend UI
 ├── sample_data/
 │   └── customer_support.csv  # Sample training dataset
 ├── uploads/                # Uploaded datasets (gitignored)
-├── trained_adapters/       # Saved LoRA adapters (gitignored)
-└── screenshots/
-    ├── dataset_upload.png
-    ├── training_results.png
-    └── chat_interface.png
+└── trained_adapters/       # Saved LoRA adapters (gitignored)
 ```
 
 ## How It Works
@@ -65,10 +71,6 @@ finetunex/
 | Variable | Description |
 |----------|-------------|
 | `GROQ_API_KEY` | Groq API key for AI explanations |
-| `MYSQL_HOST` | MySQL host (default: localhost) |
-| `MYSQL_USER` | MySQL username |
-| `MYSQL_PASSWORD` | MySQL password |
-| `MYSQL_DATABASE` | Database name (default: finetunex) |
 
 ## Installation & Setup
 
@@ -86,7 +88,7 @@ pip install -r requirements.txt
 3. Set up environment variables
 ```bash
 cp .env.example .env
-# edit .env with your API keys and MySQL credentials
+# edit .env with your Groq API key
 ```
 
 4. Run the server
@@ -106,3 +108,7 @@ python main.py
 
 ### Chat Interface — Fine-tuned vs Base Model
 ![Chat Interface](screenshots/chat_interface.png)
+
+## Deployment
+
+This app is deployed on **Hugging Face Spaces** using Docker. The `Dockerfile` and HF config header at the top of this README handle the deployment automatically.

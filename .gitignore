@@ -1,5 +1,11 @@
 .env
 __pycache__/
+*.pyc
+venv/
+.venv/
+.idea/
+.vscode/
 uploads/
 trained_adapters/
-*.pyc
+finetunex.db
+*.db
